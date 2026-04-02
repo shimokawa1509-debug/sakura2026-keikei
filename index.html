@@ -759,7 +759,7 @@ async function processReceipt(file) {
   if (parsed.error) { showToast('読み取れませんでした', 'error'); return; }
 
   const exp = {
-    id: Date.now().toString() + Math.random(),
+    id: Date.now().toString(),
     name: parsed.name || 'レシート',
     store: parsed.store || '',
     amount: Number(parsed.amount) || 0,
@@ -775,10 +775,12 @@ async function processReceipt(file) {
       const url = gasUrl + '?action=add&data=' + encodeURIComponent(JSON.stringify(exp));
       const res = await fetch(url);
       const result = await res.json();
-      console.log('GAS result:', result);
+      showToast('保存完了: ' + exp.name, 'success');
     } catch(e) {
-      console.error('GAS error:', e);
+      showToast('保存エラー: ' + e.message, 'error');
     }
+  } else {
+    showToast('GAS URL未設定', 'error');
   }
 }
 
