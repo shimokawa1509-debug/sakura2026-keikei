@@ -582,10 +582,16 @@ async function gasGet(params) {
 
 async function gasPost(body) {
   if (!gasUrl) throw new Error('GAS URL未設定');
-  const res = await fetch(gasUrl, {
-    method: 'POST',
-    body: JSON.stringify(body),
-  });
+  const action = body.action;
+  let url = gasUrl + '?action=' + action;
+  if (action === 'add') {
+    url += '&data=' + encodeURIComponent(JSON.stringify(body.expense));
+  } else if (action === 'delete') {
+    url += '&id=' + encodeURIComponent(body.id);
+  } else if (action === 'saveConfig') {
+    url += '&data=' + encodeURIComponent(JSON.stringify(body.config));
+  }
+  const res = await fetch(url);
   return res.json();
 }
 
