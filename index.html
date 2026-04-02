@@ -718,6 +718,7 @@ async function processFiles(files) {
   ss('sakura26_expenses', expenses);
   renderList();
   renderSummary();
+  setSyncStatus('', '✅ 読み取り・保存完了');
   showToast('読み取り完了！', 'success');
 }
 
@@ -762,10 +763,16 @@ async function processReceipt(file) {
   };
 
   expenses.push(exp);
+  ss('sakura26_expenses', expenses);
 
   if (gasUrl) {
-    try { await gasPost({ action: 'add', expense: exp }); }
-    catch { /* saved locally */ }
+    try {
+      const result = await gasPost({ action: 'add', expense: exp });
+      console.log('GAS result:', result);
+    } catch(e) {
+      console.error('GAS error:', e);
+      showToast('クラウド保存エラー: ' + e.message, 'error');
+    }
   }
 }
 
