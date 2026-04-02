@@ -722,8 +722,7 @@ async function processFiles(files) {
       await processReceipt(files[i]);
       successCount++;
     } catch(e) {
-      showToast('エラー: ' + e.message, 'error');
-      console.error(e);
+      alert('エラー詳細: ' + e.message);
     }
   }
   wrap.classList.remove('active');
