@@ -399,7 +399,8 @@ async function processFiles(files){
     try{
       await processReceipt(files[i]);
     }catch(e){
-      showToast('エラー: '+e.message,'error');
+      alert('エラー: '+e.message+'
+'+e.stack);
     }
   }
   wrap.classList.remove('active');
