@@ -767,6 +767,8 @@ async function processReceipt(file) {
   }
   if (parsed.error) { showToast('読み取れません: ' + parsed.error, 'error'); return; }
 
+  showToast('解析OK: ' + parsed.name + ' ' + parsed.amount + '円', 'success');
+
   const exp = {
     id: Date.now().toString(),
     name: parsed.name || 'レシート',
