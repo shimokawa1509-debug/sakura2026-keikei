@@ -125,7 +125,7 @@ hr.deco::after{content:'— 🌸 —';}
 </div>
 
 <div class="setup-banner" id="setupBanner">
-  ⚠️ Googleスプレッドシート未接続 — <a onclick="openSetupModal()">初期設定はこちら</a>
+  ⚠️ Googleスプレッドシート未接続 — <button onclick="openSetupModal()" style="background:none;border:none;color:var(--sakura);text-decoration:underline;cursor:pointer;font-family:inherit;font-size:12px;padding:0">初期設定はこちら</button>
 </div>
 
 <div class="tabs">
@@ -310,12 +310,12 @@ function updateBanner(){
   const s=document.getElementById('syncStatus');
   if(gasUrl){
     b.className='setup-banner connected';
-    b.innerHTML='✅ Googleスプレッドシート接続済み — <a onclick="openSetupModal()">設定変更</a>';
+    b.innerHTML='✅ Googleスプレッドシート接続済み — <button onclick="openSetupModal()" style="background:none;border:none;color:var(--sakura);text-decoration:underline;cursor:pointer;font-family:inherit;font-size:12px;padding:0">設定変更</button>';
     d.textContent=gasUrl;
     s.textContent='☁️ スプレッドシートと同期中';s.className='sync-status';
   }else{
     b.className='setup-banner';
-    b.innerHTML='⚠️ Googleスプレッドシート未接続 — <a onclick="openSetupModal()">初期設定はこちら</a>';
+    b.innerHTML='⚠️ Googleスプレッドシート未接続 — <button onclick="openSetupModal()" style="background:none;border:none;color:var(--sakura);text-decoration:underline;cursor:pointer;font-family:inherit;font-size:12px;padding:0">初期設定はこちら</button>';
     d.textContent='未設定';
     s.textContent='— スプレッドシート未接続（ローカル保存中）—';s.className='sync-status';
   }
