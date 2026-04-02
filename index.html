@@ -399,8 +399,7 @@ async function processFiles(files){
     try{
       await processReceipt(files[i]);
     }catch(e){
-      alert('エラー: '+e.message+'
-'+e.stack);
+      showToast('エラー: '+e.message,'error');
     }
   }
   wrap.classList.remove('active');
@@ -449,7 +448,7 @@ async function processReceipt(file){
 
   expenses.push(exp);
   ss('sakura26_expenses',expenses);
-  alert('追加しました: '+exp.name+' '+fmt(exp.amount)+' 件数:'+expenses.length);
+  
   showToast('読み取り: '+exp.name+' '+fmt(exp.amount),'success');
 
   if(gasUrl){
