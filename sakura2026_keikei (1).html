@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>桜旅2026 経費精算</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #faf6f0;
+  --surface: #ffffff;
+  --surface2: #f5f0ea;
+  --border: #e8ddd0;
+  --border2: #d4c8b8;
+  --ink: #1e1a16;
+  --ink2: #6b5e52;
+  --ink3: #a8998a;
+  --sakura: #d4688a;
+  --sakura2: #e891aa;
+  --sakura-pale: #fce8ef;
+  --gold: #b8860b;
+  --gold-pale: #fdf5e0;
+  --green: #4a7c59;
+  --green-pale: #e8f2eb;
+  --blue: #3a6b9a;
+  --blue-pale: #e5eef7;
+  --orange: #c4602a;
+  --purple: #6b4a8a;
+  --red: #c23b3b;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Shippori Mincho', serif;
+  min-height: 100vh;
+  padding-bottom: 60px;
+}
+
+.header {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 24px 20px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.header::before {
+  content: '🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸';
+  position: absolute; top: 6px; left: 0; right: 0;
+  font-size: 10px; letter-spacing: 2px; opacity: .25; white-space: nowrap; overflow: hidden;
+}
+.header::after {
+  content: '🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸';
+  position: absolute; bottom: 6px; left: 0; right: 0;
+  font-size: 10px; letter-spacing: 2px; opacity: .25; white-space: nowrap; overflow: hidden;
+}
+.header-inner { position: relative; z-index: 1; }
+.header h1 { font-size: 22px; font-weight: 800; letter-spacing: .12em; }
+.header h1 span { color: var(--sakura2); }
+.header p { font-size: 11px; color: var(--ink3); margin-top: 3px; letter-spacing: .08em; }
+
+/* GAS URL setup banner */
+.setup-banner {
+  background: #fff8e8;
+  border-bottom: 2px solid #e8c547;
+  padding: 12px 16px;
+  font-size: 12px;
+  color: #7a6020;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.setup-banner a { color: var(--sakura); text-decoration: underline; cursor: pointer; }
+.setup-banner.connected { background: var(--green-pale); border-color: var(--green); color: var(--green); }
+
+.tabs {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.tab {
+  flex: 1; padding: 12px 4px; text-align: center;
+  font-size: 12px; font-weight: 600; color: var(--ink3);
+  cursor: pointer; border-bottom: 2px solid transparent;
+  margin-bottom: -2px; letter-spacing: .05em; transition: color .2s, border-color .2s;
+}
+.tab.active { color: var(--sakura); border-bottom-color: var(--sakura); }
+
+.panel { display: none; padding: 16px; }
+.panel.active { display: block; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.card-title {
+  font-size: 11px; font-weight: 700; color: var(--ink3);
+  letter-spacing: .12em; text-transform: uppercase;
+  margin-bottom: 14px; display: flex; align-items: center; gap: 6px;
+}
+
+.upload-zone {
+  border: 2px dashed var(--border2); border-radius: 10px;
+  padding: 28px 16px; text-align: center; cursor: pointer;
+  transition: all .2s; position: relative; background: var(--surface2);
+}
+.upload-zone:hover, .upload-zone.drag { border-color: var(--sakura); background: var(--sakura-pale); }
+.upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-zone .icon { font-size: 32px; margin-bottom: 8px; }
+.upload-zone p { font-size: 13px; color: var(--ink2); }
+.upload-zone span { color: var(--sakura); font-weight: 700; }
+
+.loading-wrap { display: none; margin-top: 12px; }
+.loading-wrap.active { display: block; }
+.loading-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-bottom: 6px; }
+.loading-bar::after {
+  content: ''; display: block; height: 100%; width: 40%;
+  background: linear-gradient(90deg, var(--sakura), var(--sakura2));
+  animation: slide 1.2s ease-in-out infinite;
+}
+@keyframes slide { 0% { transform: translateX(-200%); } 100% { transform: translateX(450%); } }
+.loading-msg { font-size: 12px; color: var(--ink3); text-align: center; }
+
+.field-row { display: grid; gap: 8px; margin-bottom: 8px; }
+.field-row.c2 { grid-template-columns: 1fr 1fr; }
+label.field-label { font-size: 11px; color: var(--ink3); display: block; margin-bottom: 3px; letter-spacing: .06em; }
+
+input, select {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border2);
+  color: var(--ink); padding: 9px 11px; border-radius: 7px;
+  font-family: 'Shippori Mincho', serif; font-size: 13px; transition: border-color .15s;
+}
+input:focus, select:focus { outline: none; border-color: var(--sakura); background: var(--surface); }
+
+.cat-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.cat-chip {
+  padding: 5px 11px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  cursor: pointer; border: 1.5px solid transparent; transition: all .15s;
+  font-family: 'Shippori Mincho', serif;
+}
+.cat-chip.selected { border-color: currentColor; }
+
+.payer-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.payer-chip {
+  padding: 5px 12px; border-radius: 20px; font-size: 12px;
+  cursor: pointer; border: 1.5px solid var(--border2); color: var(--ink2);
+  background: var(--surface2); transition: all .15s; font-family: 'Shippori Mincho', serif;
+}
+.payer-chip.selected { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+.btn {
+  padding: 11px 16px; border-radius: 7px; font-family: 'Shippori Mincho', serif;
+  font-weight: 700; font-size: 13px; cursor: pointer; border: none;
+  letter-spacing: .06em; transition: all .15s;
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+}
+.btn-primary { background: var(--sakura); color: white; width: 100%; }
+.btn-primary:hover { background: var(--sakura2); }
+.btn-primary:disabled { background: var(--ink3); cursor: not-allowed; }
+.btn-secondary { background: var(--surface2); color: var(--ink2); border: 1px solid var(--border2); }
+.btn-secondary:hover { border-color: var(--ink3); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+.summary-card.full { grid-column: span 2; }
+.summary-card.sakura { background: var(--sakura-pale); border-color: var(--sakura2); }
+.summary-card .s-label { font-size: 10px; color: var(--ink3); letter-spacing: .1em; margin-bottom: 5px; text-transform: uppercase; }
+.summary-card .s-value { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: var(--ink); }
+.summary-card.sakura .s-value { color: var(--sakura); }
+.summary-card .s-value.lg { font-size: 28px; }
+
+.day-section { margin-bottom: 16px; }
+.day-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; background: var(--ink); color: var(--bg);
+  border-radius: 8px 8px 0 0; font-size: 13px; font-weight: 700; letter-spacing: .08em;
+}
+.day-header .day-total { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 14px; color: var(--sakura2); }
+
+.expense-row {
+  background: var(--surface); border: 1px solid var(--border); border-top: none;
+  padding: 11px 12px; display: grid; grid-template-columns: 1fr auto;
+  gap: 6px; align-items: start; transition: background .15s;
+}
+.expense-row:last-child { border-radius: 0 0 8px 8px; }
+.expense-row:hover { background: var(--surface2); }
+.expense-row .row-main { display: flex; flex-direction: column; gap: 3px; }
+.expense-row .row-name { font-size: 13px; font-weight: 600; }
+.expense-row .row-meta { font-size: 11px; color: var(--ink3); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.expense-row .row-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.expense-row .row-amount { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; }
+
+.del-btn {
+  background: none; border: none; cursor: pointer; color: var(--ink3);
+  font-size: 14px; padding: 2px 4px; border-radius: 4px; transition: color .15s, background .15s; line-height: 1;
+}
+.del-btn:hover { color: var(--red); background: #fde8e8; }
+
+.tag {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: .04em;
+}
+
+.breakdown-item { margin-bottom: 10px; }
+.breakdown-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.breakdown-top .b-name { font-size: 12px; font-weight: 600; }
+.breakdown-top .b-amt { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--ink2); }
+.bar-bg { height: 7px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width .5s ease; }
+
+.payer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.payer-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+.payer-card .p-name { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+.payer-card .p-amt { font-family: 'DM Mono', monospace; font-size: 16px; color: var(--sakura); }
+.payer-card .p-count { font-size: 11px; color: var(--ink3); margin-top: 2px; }
+
+.settlement-box { background: var(--gold-pale); border: 1px solid #d4aa3a; border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+.settlement-box .s-title { font-size: 12px; font-weight: 700; color: var(--gold); margin-bottom: 8px; }
+.settlement-row { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 4px; }
+.settlement-row .arrow { color: var(--gold); font-size: 16px; }
+.settlement-row .s-amount { font-family: 'DM Mono', monospace; font-weight: 500; margin-left: auto; color: var(--red); }
+
+.export-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(30,26,22,.65); z-index: 200;
+  align-items: flex-end; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border-radius: 20px 20px 0 0;
+  padding: 20px 18px 36px; width: 100%; max-width: 480px;
+  max-height: 85vh; overflow-y: auto; animation: slideUp .3s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-handle { width: 40px; height: 4px; background: var(--border2); border-radius: 2px; margin: 0 auto 16px; }
+.modal h2 { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
+.modal pre {
+  font-family: 'DM Mono', monospace; font-size: 11px; white-space: pre-wrap;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px; margin-bottom: 14px; line-height: 1.7; max-height: 50vh; overflow-y: auto;
+}
+
+/* GAS setup modal */
+.setup-modal { padding: 20px 18px 36px; }
+.setup-modal ol { padding-left: 18px; }
+.setup-modal li { font-size: 13px; margin-bottom: 10px; line-height: 1.6; color: var(--ink2); }
+.setup-modal li strong { color: var(--ink); }
+.setup-modal code {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  background: var(--surface2); padding: 2px 6px; border-radius: 4px;
+}
+.url-input-wrap { margin: 12px 0; }
+
+.manage-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.manage-chip {
+  display: flex; align-items: center; gap: 4px;
+  padding: 5px 10px; background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 20px; font-size: 12px; font-family: 'Shippori Mincho', serif;
+}
+.manage-chip button { background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 13px; padding: 0; line-height: 1; transition: color .15s; }
+.manage-chip button:hover { color: var(--red); }
+.add-row { display: flex; gap: 8px; }
+.add-row input { flex: 1; }
+
+.empty-state { text-align: center; padding: 40px 16px; color: var(--ink3); font-size: 13px; }
+.empty-state .e-icon { font-size: 36px; margin-bottom: 8px; }
+
+.sync-status { font-size: 11px; color: var(--ink3); text-align: right; margin-bottom: 8px; }
+.sync-status.syncing { color: var(--sakura); }
+.sync-status.error { color: var(--red); }
+
+.toast {
+  position: fixed; bottom: 20px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--ink); color: var(--bg);
+  padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 700;
+  z-index: 300; transition: transform .3s ease; white-space: nowrap; max-width: 90vw; text-align: center;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { background: var(--green); }
+.toast.error { background: var(--red); }
+
+.divider { height: 1px; background: var(--border); margin: 14px 0; }
+.settings-section { margin-bottom: 20px; }
+.settings-section h3 { font-size: 13px; font-weight: 700; margin-bottom: 10px; color: var(--ink2); }
+hr.deco { border: none; text-align: center; color: var(--ink3); font-size: 12px; margin: 16px 0; letter-spacing: .2em; }
+hr.deco::after { content: '— 🌸 —'; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <h1>🌸 <span>桜旅</span>2026 経費精算</h1>
+    <p>レシート読み取り ＋ 立替管理 ＋ 精算書出力</p>
+  </div>
+</div>
+
+<div class="setup-banner" id="setupBanner">
+  ⚠️ Googleスプレッドシート未接続 — <a onclick="openSetupModal()">初期設定はこちら</a>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('add')">📷 追加</div>
+  <div class="tab" onclick="switchTab('list')">📋 一覧</div>
+  <div class="tab" onclick="switchTab('summary')">📊 集計</div>
+  <div class="tab" onclick="switchTab('settings')">⚙️ 設定</div>
+</div>
+
+<!-- ===== TAB: 追加 ===== -->
+<div class="panel active" id="tab-add">
+  <div class="sync-status" id="syncStatus">— スプレッドシート未接続 —</div>
+
+  <div class="card">
+    <div class="card-title">📷 レシート写真で自動入力</div>
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept="image/*" multiple>
+      <div class="icon">📸</div>
+      <p><span>タップして写真を選択</span><br>複数枚まとめてOK</p>
+    </div>
+    <div class="loading-wrap" id="loadingWrap">
+      <div class="loading-bar"></div>
+      <div class="loading-msg" id="loadingMsg">読み取り中... 🌸</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">✏️ 手動入力</div>
+    <div style="margin-bottom:10px">
+      <label class="field-label">カテゴリ</label>
+      <div class="cat-chips" id="catChips"></div>
+    </div>
+    <div class="field-row">
+      <div>
+        <label class="field-label">内容</label>
+        <input type="text" id="mName" placeholder="例：新幹線（東京→名古屋）">
+      </div>
+    </div>
+    <div class="field-row c2">
+      <div>
+        <label class="field-label">金額（円）</label>
+        <input type="number" id="mAmount" placeholder="0" min="0">
+      </div>
+      <div>
+        <label class="field-label">日付</label>
+        <input type="date" id="mDate">
+      </div>
+    </div>
+    <div style="margin-bottom:10px">
+      <label class="field-label">店名・場所（任意）</label>
+      <input type="text" id="mStore" placeholder="例：熊本城近くのカフェ">
+    </div>
+    <div style="margin-bottom:14px">
+      <label class="field-label">立替者</label>
+      <div class="payer-chips" id="payerChips"></div>
+    </div>
+    <button class="btn btn-primary" id="addBtn" onclick="addManual()">＋ 追加する</button>
+  </div>
+</div>
+
+<!-- ===== TAB: 一覧 ===== -->
+<div class="panel" id="tab-list">
+  <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+    <button class="btn btn-secondary btn-sm" onclick="loadFromSheet()">🔄 更新</button>
+  </div>
+  <div id="dayList">
+    <div class="empty-state"><div class="e-icon">🌸</div>データを読み込んでいます...</div>
+  </div>
+</div>
+
+<!-- ===== TAB: 集計 ===== -->
+<div class="panel" id="tab-summary">
+  <div class="summary-grid">
+    <div class="summary-card sakura full">
+      <div class="s-label">総合計</div>
+      <div class="s-value lg" id="sTotalAmt">¥0</div>
+    </div>
+    <div class="summary-card">
+      <div class="s-label">件数</div>
+      <div class="s-value" id="sTotalCount">0件</div>
+    </div>
+    <div class="summary-card">
+      <div class="s-label">日数</div>
+      <div class="s-value" id="sTotalDays">0日</div>
+    </div>
+    <div class="summary-card">
+      <div class="s-label">1日平均</div>
+      <div class="s-value" id="sAvgDay">¥0</div>
+    </div>
+    <div class="summary-card">
+      <div class="s-label">1件平均</div>
+      <div class="s-value" id="sAvgItem">¥0</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🏷 カテゴリ別</div>
+    <div id="catBreakdown"><div style="color:var(--ink3);font-size:13px">データなし</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">👤 立替者別</div>
+    <div class="payer-grid" id="payerBreakdown"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📅 日別合計</div>
+    <div id="dayBreakdown"><div style="color:var(--ink3);font-size:13px">データなし</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">💴 精算計算</div>
+    <div id="settlementSection"><div style="color:var(--ink3);font-size:13px">立替者が複数いる場合に表示されます</div></div>
+  </div>
+  <hr class="deco">
+  <div class="card">
+    <div class="card-title">📤 出力</div>
+    <div class="export-grid">
+      <button class="btn btn-secondary" onclick="showPreview()">精算書を見る</button>
+      <button class="btn btn-secondary" onclick="exportCSV()">CSV出力</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB: 設定 ===== -->
+<div class="panel" id="tab-settings">
+  <div class="settings-section">
+    <h3>☁️ Googleスプレッドシート連携</h3>
+    <div class="card" style="margin-bottom:0">
+      <div style="font-size:12px;color:var(--ink2);margin-bottom:10px" id="gasUrlDisplay">未設定</div>
+      <button class="btn btn-secondary" style="width:100%" onclick="openSetupModal()">接続設定を変更</button>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="settings-section">
+    <h3>🏷 カテゴリ管理</h3>
+    <div class="manage-list" id="catManageList"></div>
+    <div class="add-row">
+      <input type="text" id="newCatName" placeholder="新しいカテゴリ名">
+      <input type="color" id="newCatColor" value="#d4688a" style="width:44px;padding:4px 6px;flex-shrink:0">
+      <button class="btn btn-secondary btn-sm" onclick="addCategory()">追加</button>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="settings-section">
+    <h3>👤 メンバー管理</h3>
+    <div class="manage-list" id="payerManageList"></div>
+    <div class="add-row">
+      <input type="text" id="newPayerName" placeholder="名前（例：しも、つだあゆこ）">
+      <button class="btn btn-secondary btn-sm" onclick="addPayer()">追加</button>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="settings-section">
+    <h3>🗑 データ管理</h3>
+    <button class="btn btn-secondary" onclick="clearLocal()" style="width:100%;color:var(--red)">ローカルキャッシュを削除</button>
+  </div>
+</div>
+
+<!-- ===== SETUP MODAL ===== -->
+<div class="modal-overlay" id="setupModalOverlay" onclick="closeSetupModal(event)">
+  <div class="modal setup-modal">
+    <div class="modal-handle"></div>
+    <h2>🔧 Googleスプレッドシート接続設定</h2>
+    <ol>
+      <li><strong>Google Apps Scriptを開く</strong><br>
+        <a href="https://script.google.com" target="_blank" style="color:var(--sakura)">script.google.com</a> → 「新しいプロジェクト」
+      </li>
+      <li><strong>Code.gsの内容を貼り付ける</strong><br>
+        配布した <code>Code.gs</code> の内容をコピーして貼り付け
+      </li>
+      <li><strong>スプレッドシートを紐付ける</strong><br>
+        「リソース」→「Googleスプレッドシート」→ 保存先のスプレッドシートを選択（または新規作成）
+      </li>
+      <li><strong>デプロイ</strong><br>
+        「デプロイ」→「新しいデプロイ」→ 種類：「ウェブアプリ」→ アクセス：<strong>「全員」</strong> → デプロイ
+      </li>
+      <li><strong>URLをここに貼り付ける</strong></li>
+    </ol>
+    <div class="url-input-wrap">
+      <label class="field-label">Apps Script ウェブアプリURL</label>
+      <input type="url" id="gasUrlInput" placeholder="https://script.google.com/macros/s/...">
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="saveGasUrl()" style="flex:1">保存して接続</button>
+      <button class="btn btn-secondary" onclick="closeSetupModal()" style="flex:1">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PREVIEW MODAL ===== -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>精算書プレビュー</h2>
+    <pre id="previewText"></pre>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="copyPreview()" style="flex:1">コピー</button>
+      <button class="btn btn-secondary" onclick="closeModal()" style="flex:1">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== CONFIG ====================
+const DEFAULT_CATS = [
+  { name: '交通', color: '#3a6b9a' },
+  { name: '食事', color: '#c4602a' },
+  { name: '宿泊', color: '#6b4a8a' },
+  { name: '撮影機材', color: '#4a7c59' },
+  { name: '入場料', color: '#b8860b' },
+  { name: '通信', color: '#2a8a8a' },
+  { name: 'その他', color: '#8a8070' },
+];
+const DEFAULT_PAYERS = ['しも', 'つだあゆこ', '葛西'];
+const TRIP_LOCATIONS = {
+  '2026-03-20':'東京','2026-03-21':'東京','2026-03-22':'東京',
+  '2026-03-23':'名古屋',
+  '2026-03-27':'熊本','2026-03-28':'博多',
+  '2026-03-29':'広島','2026-03-30':'比婆山・出雲',
+};
+
+function ls(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } }
+function ss(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+
+let expenses = ls('sakura26_expenses', []);
+let categories = ls('sakura26_cats', DEFAULT_CATS);
+let payers = ls('sakura26_payers', DEFAULT_PAYERS);
+let gasUrl = ls('sakura26_gasUrl', 'https://script.google.com/macros/s/AKfycbz2Dm318fK94JFJlWln2GB5NkNTi_v3jCqoptvSGku94JZbtIokNGsrkoiW8m32Ij-s/exec');
+let selectedCat = categories[0]?.name || '';
+let selectedPayer = payers[0] || '';
+
+// ==================== INIT ====================
+function init() {
+  document.getElementById('mDate').value = new Date().toISOString().slice(0,10);
+  updateBanner();
+  renderCatChips();
+  renderPayerChips();
+  renderSettings();
+  renderList();
+  renderSummary();
+  if (gasUrl) loadFromSheet();
+}
+
+// ==================== BANNER ====================
+function updateBanner() {
+  const b = document.getElementById('setupBanner');
+  const d = document.getElementById('gasUrlDisplay');
+  const s = document.getElementById('syncStatus');
+  if (gasUrl) {
+    b.className = 'setup-banner connected';
+    b.innerHTML = '✅ Googleスプレッドシート接続済み — <a onclick="openSetupModal()">設定変更</a>';
+    d.textContent = gasUrl.slice(0, 60) + '...';
+    s.textContent = '☁️ スプレッドシートと同期中';
+    s.className = 'sync-status';
+  } else {
+    b.className = 'setup-banner';
+    b.innerHTML = '⚠️ Googleスプレッドシート未接続 — <a onclick="openSetupModal()">初期設定はこちら</a>';
+    d.textContent = '未設定';
+    s.textContent = '— スプレッドシート未接続（ローカル保存中）—';
+    s.className = 'sync-status';
+  }
+}
+
+// ==================== GAS API ====================
+async function gasGet(params) {
+  if (!gasUrl) throw new Error('GAS URL未設定');
+  const url = gasUrl + '?' + new URLSearchParams(params);
+  const res = await fetch(url);
+  return res.json();
+}
+
+async function gasPost(body) {
+  if (!gasUrl) throw new Error('GAS URL未設定');
+  const res = await fetch(gasUrl, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  return res.json();
+}
+
+async function loadFromSheet() {
+  if (!gasUrl) return;
+  setSyncStatus('syncing', '🔄 スプレッドシートから読み込み中...');
+  try {
+    const data = await gasGet({ action: 'getAll' });
+    if (data.expenses) {
+      expenses = data.expenses.map(e => ({ ...e, id: e.id || Date.now(), amount: Number(e.amount) }));
+      ss('sakura26_expenses', expenses);
+      renderList();
+      renderSummary();
+      setSyncStatus('', `✅ 同期済み（${expenses.length}件）`);
+    }
+  } catch(e) {
+    setSyncStatus('error', '❌ 読み込みエラー');
+  }
+}
+
+function setSyncStatus(cls, msg) {
+  const el = document.getElementById('syncStatus');
+  el.className = 'sync-status' + (cls ? ' '+cls : '');
+  el.textContent = msg;
+}
+
+// ==================== TABS ====================
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', ['add','list','summary','settings'][i] === id);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if (id === 'list') renderList();
+  if (id === 'summary') renderSummary();
+  if (id === 'settings') renderSettings();
+}
+
+// ==================== CHIPS ====================
+function renderCatChips() {
+  document.getElementById('catChips').innerHTML = categories.map(c => `
+    <div class="cat-chip ${selectedCat===c.name?'selected':''}"
+      style="background:${selectedCat===c.name?c.color+'22':'#f5f0ea'};color:${c.color};border-color:${selectedCat===c.name?c.color:'transparent'}"
+      onclick="selectCat('${c.name}')">
+      ${c.name}
+    </div>
+  `).join('');
+}
+function selectCat(n) { selectedCat = n; renderCatChips(); }
+
+function renderPayerChips() {
+  document.getElementById('payerChips').innerHTML = payers.map(p => `
+    <div class="payer-chip ${selectedPayer===p?'selected':''}" onclick="selectPayer('${p}')">
+      ${p}
+    </div>
+  `).join('');
+}
+function selectPayer(n) { selectedPayer = n; renderPayerChips(); }
+
+// ==================== ADD ====================
+async function addManual() {
+  const name = document.getElementById('mName').value.trim();
+  const amount = parseFloat(document.getElementById('mAmount').value);
+  if (!name) { showToast('内容を入力してください', 'error'); return; }
+  if (!amount || amount <= 0) { showToast('金額を入力してください', 'error'); return; }
+
+  const exp = {
+    id: Date.now().toString(),
+    name,
+    store: document.getElementById('mStore').value.trim(),
+    amount,
+    date: document.getElementById('mDate').value,
+    category: selectedCat || categories[0]?.name || 'その他',
+    payer: selectedPayer || payers[0] || '',
+  };
+
+  const btn = document.getElementById('addBtn');
+  btn.disabled = true;
+  btn.textContent = '保存中...';
+
+  // Save locally first
+  expenses.push(exp);
+  ss('sakura26_expenses', expenses);
+  renderList();
+  renderSummary();
+
+  // Then sync to sheet
+  if (gasUrl) {
+    try {
+      await gasPost({ action: 'add', expense: exp });
+      setSyncStatus('', `✅ スプレッドシートに保存しました`);
+    } catch {
+      setSyncStatus('error', '❌ クラウド保存エラー（ローカルには保存済み）');
+    }
+  }
+
+  document.getElementById('mName').value = '';
+  document.getElementById('mAmount').value = '';
+  document.getElementById('mStore').value = '';
+  btn.disabled = false;
+  btn.textContent = '＋ 追加する';
+  showToast('追加しました 🌸', 'success');
+}
+
+// ==================== UPLOAD ====================
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  const files = Array.from(e.target.files);
+  if (files.length) processFiles(files);
+  this.value = '';
+});
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+zone.addEventListener('drop', e => {
+  e.preventDefault(); zone.classList.remove('drag');
+  const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+  if (files.length) processFiles(files);
+});
+
+async function processFiles(files) {
+  const wrap = document.getElementById('loadingWrap');
+  const msg = document.getElementById('loadingMsg');
+  wrap.classList.add('active');
+  for (let i = 0; i < files.length; i++) {
+    msg.textContent = `読み取り中 (${i+1}/${files.length})... 🌸`;
+    try { await processReceipt(files[i]); }
+    catch(e) { showToast('読み取りに失敗しました', 'error'); }
+  }
+  wrap.classList.remove('active');
+  ss('sakura26_expenses', expenses);
+  renderList();
+  renderSummary();
+  setSyncStatus('', '✅ 読み取り・保存完了');
+  showToast('読み取り完了！', 'success');
+}
+
+async function processReceipt(file) {
+  const base64 = await toBase64(file);
+  const catNames = categories.map(c => c.name).join('|');
+  const today = new Date().toISOString().slice(0,10);
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: file.type||'image/jpeg', data: base64 } },
+          { type: 'text', text: `このレシートを読み取り、以下のJSON形式のみで回答してください（マークダウン不要）：
+{"name":"内容の簡潔な説明","store":"店名","amount":合計金額の数値,"date":"YYYY-MM-DD（不明なら${today}）","category":"${catNames}のいずれか"}
+読み取れない場合のみ {"error":"読み取れません"}` }
+        ]
+      }]
+    })
+  });
+
+  const data = await res.json();
+  const text = (data.content?.[0]?.text || '').trim();
+  let parsed;
+  try { parsed = JSON.parse(text); }
+  catch { const m = text.match(/\{[\s\S]*?\}/); if (m) parsed = JSON.parse(m[0]); else throw new Error('parse'); }
+  if (parsed.error) { showToast('読み取れませんでした', 'error'); return; }
+
+  const exp = {
+    id: Date.now().toString() + Math.random(),
+    name: parsed.name || 'レシート',
+    store: parsed.store || '',
+    amount: Number(parsed.amount) || 0,
+    date: parsed.date || today,
+    category: categories.find(c => c.name === parsed.category) ? parsed.category : (categories[0]?.name || 'その他'),
+    payer: selectedPayer || payers[0] || '',
+  };
+
+  expenses.push(exp);
+  ss('sakura26_expenses', expenses);
+
+  if (gasUrl) {
+    try {
+      const result = await gasPost({ action: 'add', expense: exp });
+      console.log('GAS result:', result);
+    } catch(e) {
+      console.error('GAS error:', e);
+      showToast('クラウド保存エラー: ' + e.message, 'error');
+    }
+  }
+}
+
+function toBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+// ==================== LIST ====================
+function renderList() {
+  const el = document.getElementById('dayList');
+  if (!expenses.length) {
+    el.innerHTML = '<div class="empty-state"><div class="e-icon">🌸</div>まだ経費がありません</div>';
+    return;
+  }
+  const byDay = {};
+  expenses.forEach(e => { const d = e.date||'日付なし'; if(!byDay[d]) byDay[d]=[]; byDay[d].push(e); });
+  el.innerHTML = Object.keys(byDay).sort().map(day => {
+    const items = byDay[day];
+    const total = items.reduce((s,e) => s+e.amount, 0);
+    return `
+      <div class="day-section">
+        <div class="day-header">
+          <span>📅 ${fmtDay(day)}</span>
+          <span class="day-total">${fmt(total)}</span>
+        </div>
+        ${items.map(e => {
+          const cat = categories.find(c => c.name === e.category);
+          const col = cat?.color || '#888';
+          return `
+            <div class="expense-row">
+              <div class="row-main">
+                <div class="row-name">${e.name}</div>
+                <div class="row-meta">
+                  ${e.store ? `<span>🏪 ${e.store}</span>` : ''}
+                  <span class="tag" style="background:${col}22;color:${col}">${e.category}</span>
+                  ${e.payer ? `<span>👤 ${e.payer}</span>` : ''}
+                </div>
+              </div>
+              <div class="row-right">
+                <div class="row-amount">${fmt(e.amount)}</div>
+                <button class="del-btn" onclick="removeExpense('${e.id}')">×</button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }).join('');
+}
+
+async function removeExpense(id) {
+  expenses = expenses.filter(e => String(e.id) !== String(id));
+  ss('sakura26_expenses', expenses);
+  renderList();
+  renderSummary();
+  if (gasUrl) {
+    try { await gasPost({ action: 'delete', id }); setSyncStatus('', '✅ 削除しました'); }
+    catch { setSyncStatus('error', '❌ クラウド削除エラー'); }
+  }
+  showToast('削除しました');
+}
+
+function fmtDay(d) {
+  if (d === '日付なし') return d;
+  const dt = new Date(d + 'T00:00:00');
+  const dows = ['日','月','火','水','木','金','土'];
+  const loc = TRIP_LOCATIONS[d] ? ` 〈${TRIP_LOCATIONS[d]}〉` : '';
+  return `${dt.getMonth()+1}/${dt.getDate()}（${dows[dt.getDay()]}）${loc}`;
+}
+
+// ==================== SUMMARY ====================
+function renderSummary() {
+  const total = expenses.reduce((s, e) => s + e.amount, 0);
+  const days = new Set(expenses.map(e => e.date)).size;
+  document.getElementById('sTotalAmt').textContent = fmt(total);
+  document.getElementById('sTotalCount').textContent = expenses.length + '件';
+  document.getElementById('sTotalDays').textContent = days + '日';
+  document.getElementById('sAvgDay').textContent = days ? fmt(Math.round(total/days)) : '¥0';
+  document.getElementById('sAvgItem').textContent = expenses.length ? fmt(Math.round(total/expenses.length)) : '¥0';
+
+  // Cat
+  const byCat = {};
+  expenses.forEach(e => { byCat[e.category] = (byCat[e.category]||0) + e.amount; });
+  const maxC = Math.max(...Object.values(byCat), 1);
+  document.getElementById('catBreakdown').innerHTML = Object.keys(byCat).length
+    ? Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([n, a]) => {
+        const col = categories.find(c=>c.name===n)?.color || '#888';
+        return `<div class="breakdown-item">
+          <div class="breakdown-top"><span class="b-name" style="color:${col}">${n}</span><span class="b-amt">${fmt(a)}</span></div>
+          <div class="bar-bg"><div class="bar-fill" style="width:${(a/maxC*100).toFixed(1)}%;background:${col}"></div></div>
+        </div>`;
+      }).join('')
+    : '<div style="color:var(--ink3);font-size:13px">データなし</div>';
+
+  // Payer
+  const byP = {};
+  expenses.forEach(e => { const p=e.payer||'未設定'; if(!byP[p]) byP[p]={amt:0,count:0}; byP[p].amt+=e.amount; byP[p].count++; });
+  document.getElementById('payerBreakdown').innerHTML = Object.keys(byP).length
+    ? Object.entries(byP).map(([n,d]) => `
+        <div class="payer-card">
+          <div class="p-name">👤 ${n}</div>
+          <div class="p-amt">${fmt(d.amt)}</div>
+          <div class="p-count">${d.count}件</div>
+        </div>`).join('')
+    : '<div style="color:var(--ink3);font-size:13px">データなし</div>';
+
+  // Day
+  const byD = {};
+  expenses.forEach(e => { byD[e.date||'未設定']=(byD[e.date||'未設定']||0)+e.amount; });
+  const maxD = Math.max(...Object.values(byD), 1);
+  document.getElementById('dayBreakdown').innerHTML = Object.keys(byD).length
+    ? Object.entries(byD).sort((a,b)=>a[0]>b[0]?1:-1).map(([d,a]) => `
+        <div class="breakdown-item">
+          <div class="breakdown-top"><span class="b-name">${fmtDay(d)}</span><span class="b-amt">${fmt(a)}</span></div>
+          <div class="bar-bg"><div class="bar-fill" style="width:${(a/maxD*100).toFixed(1)}%;background:var(--sakura)"></div></div>
+        </div>`).join('')
+    : '<div style="color:var(--ink3);font-size:13px">データなし</div>';
+
+  // Settlement
+  const payerNames = Object.keys(byP).filter(p=>p!=='未設定');
+  const sEl = document.getElementById('settlementSection');
+  if (payerNames.length < 2) {
+    sEl.innerHTML = '<div style="color:var(--ink3);font-size:13px">立替者が2人以上いる場合に表示されます</div>';
+    return;
+  }
+  const per = total / payerNames.length;
+  const balances = payerNames.map(p => ({ name: p, balance: (byP[p]?.amt||0) - per }));
+  const cred = balances.filter(b=>b.balance>0).sort((a,b)=>b.balance-a.balance).map(x=>({...x}));
+  const debt = balances.filter(b=>b.balance<0).sort((a,b)=>a.balance-b.balance).map(x=>({...x}));
+  const settlements = [];
+  let ci=0, di=0;
+  while(ci<cred.length&&di<debt.length){
+    const pay=Math.min(cred[ci].balance,-debt[di].balance);
+    if(pay>1) settlements.push({from:debt[di].name,to:cred[ci].name,amount:Math.round(pay)});
+    cred[ci].balance-=pay; debt[di].balance+=pay;
+    if(Math.abs(cred[ci].balance)<1)ci++;
+    if(Math.abs(debt[di].balance)<1)di++;
+  }
+  sEl.innerHTML = `<div style="font-size:12px;color:var(--ink3);margin-bottom:10px">1人あたり：${fmt(Math.round(per))}</div>`
+    + settlements.map(s=>`
+      <div class="settlement-box">
+        <div class="s-title">💸 精算</div>
+        <div class="settlement-row">
+          <span>${s.from}</span><span class="arrow">→</span><span>${s.to}</span>
+          <span class="s-amount">${fmt(s.amount)}</span>
+        </div>
+      </div>`).join('');
+}
+
+// ==================== SETTINGS ====================
+function renderSettings() {
+  document.getElementById('catManageList').innerHTML = categories.map((c,i)=>`
+    <div class="manage-chip">
+      <span style="width:10px;height:10px;background:${c.color};border-radius:50%;display:inline-block;flex-shrink:0"></span>
+      <span>${c.name}</span>
+      <button onclick="removeCat(${i})">×</button>
+    </div>`).join('');
+  document.getElementById('payerManageList').innerHTML = payers.map((p,i)=>`
+    <div class="manage-chip">
+      <span>👤</span><span>${p}</span>
+      <button onclick="removePayer(${i})">×</button>
+    </div>`).join('');
+}
+
+function addCategory() {
+  const name = document.getElementById('newCatName').value.trim();
+  const color = document.getElementById('newCatColor').value;
+  if (!name) return;
+  if (categories.find(c=>c.name===name)) { showToast('同名が既にあります', 'error'); return; }
+  categories.push({name,color});
+  ss('sakura26_cats', categories);
+  document.getElementById('newCatName').value='';
+  renderSettings(); renderCatChips();
+  if (gasUrl) gasPost({action:'saveConfig',config:{categories}}).catch(()=>{});
+  showToast('追加しました', 'success');
+}
+
+function removeCat(i) {
+  if (categories.length<=1) { showToast('最低1つ必要です','error'); return; }
+  categories.splice(i,1);
+  ss('sakura26_cats', categories);
+  if (!categories.find(c=>c.name===selectedCat)) selectedCat=categories[0]?.name||'';
+  renderSettings(); renderCatChips();
+  if (gasUrl) gasPost({action:'saveConfig',config:{categories}}).catch(()=>{});
+}
+
+function addPayer() {
+  const name = document.getElementById('newPayerName').value.trim();
+  if (!name) return;
+  if (payers.includes(name)) { showToast('同名が既にいます','error'); return; }
+  payers.push(name);
+  ss('sakura26_payers', payers);
+  document.getElementById('newPayerName').value='';
+  renderSettings(); renderPayerChips();
+  if (gasUrl) gasPost({action:'saveConfig',config:{payers}}).catch(()=>{});
+  showToast('追加しました','success');
+}
+
+function removePayer(i) {
+  payers.splice(i,1);
+  ss('sakura26_payers', payers);
+  renderSettings(); renderPayerChips();
+  if (gasUrl) gasPost({action:'saveConfig',config:{payers}}).catch(()=>{});
+}
+
+function clearLocal() {
+  if (!confirm('ローカルキャッシュを削除しますか？（スプレッドシートのデータは残ります）')) return;
+  expenses = [];
+  ss('sakura26_expenses', []);
+  renderList(); renderSummary();
+  showToast('削除しました');
+}
+
+// ==================== GAS SETUP ====================
+function openSetupModal() {
+  document.getElementById('gasUrlInput').value = gasUrl || '';
+  document.getElementById('setupModalOverlay').classList.add('open');
+}
+
+function closeSetupModal(e) {
+  if (!e || e.target === document.getElementById('setupModalOverlay'))
+    document.getElementById('setupModalOverlay').classList.remove('open');
+}
+
+async function saveGasUrl() {
+  const url = document.getElementById('gasUrlInput').value.trim();
+  if (!url) { showToast('URLを入力してください', 'error'); return; }
+  gasUrl = url;
+  ss('sakura26_gasUrl', gasUrl);
+  closeSetupModal();
+  updateBanner();
+  showToast('接続しました！データを読み込み中...', 'success');
+  await loadFromSheet();
+}
+
+// ==================== PREVIEW / EXPORT ====================
+function showPreview() {
+  const total = expenses.reduce((s,e)=>s+e.amount, 0);
+  const today = new Date().toLocaleDateString('ja-JP');
+  const byDay = {};
+  expenses.forEach(e=>{ const d=e.date||'日付なし'; if(!byDay[d]) byDay[d]=[]; byDay[d].push(e); });
+  const byP = {};
+  expenses.forEach(e=>{ const p=e.payer||'未設定'; byP[p]=(byP[p]||0)+e.amount; });
+
+  let text = '【桜旅2026 経費精算書】\n作成日：' + today + '\n' + '═'.repeat(28) + '\n\n';
+  Object.keys(byDay).sort().forEach(day=>{
+    const items=byDay[day], dt=fmtDay(day), dtotal=items.reduce((s,e)=>s+e.amount,0);
+    text += `▶ ${dt}　${fmt(dtotal)}\n`;
+    items.forEach(e=>{
+      text += `  ・${e.name}${e.store?'（'+e.store+'）':''}　${fmt(e.amount)}　[${e.category}]${e.payer?'　'+e.payer:''}\n`;
+    });
+    text += '\n';
+  });
+  text += '─'.repeat(28) + '\n【立替者別】\n';
+  Object.entries(byP).forEach(([p,a])=>text+=`  ${p}：${fmt(a)}\n`);
+  text += `\n▶ 合　計：${fmt(total)}\n`;
+  if (Object.keys(byP).length>=2) {
+    const per=total/Object.keys(byP).length;
+    text += `　1人あたり：${fmt(Math.round(per))}\n`;
+  }
+
+  document.getElementById('previewText').textContent = text;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (!e || e.target===document.getElementById('modalOverlay'))
+    document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function copyPreview() {
+  navigator.clipboard.writeText(document.getElementById('previewText').textContent)
+    .then(()=>showToast('コピーしました！','success'));
+}
+
+function exportCSV() {
+  const rows = [['日付','内容','店名','カテゴリ','立替者','金額']];
+  expenses.sort((a,b)=>(a.date||'')>(b.date||'')?1:-1)
+    .forEach(e=>rows.push([e.date||'',e.name,e.store||'',e.category,e.payer||'',e.amount]));
+  const csv = rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `桜旅2026_経費_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  showToast('CSVを出力しました','success');
+}
+
+// ==================== UTILS ====================
+function fmt(n) { return '¥'+Number(n).toLocaleString('ja-JP'); }
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show'+(type?' '+type:'');
+  clearTimeout(window._tt);
+  window._tt = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+init();
+</script>
+</body>
+</html>
