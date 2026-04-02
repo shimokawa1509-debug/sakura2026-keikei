@@ -769,15 +769,15 @@ async function processReceipt(file) {
   };
 
   expenses.push(exp);
-  ss('sakura26_expenses', expenses);
 
   if (gasUrl) {
     try {
-      const result = await gasPost({ action: 'add', expense: exp });
+      const url = gasUrl + '?action=add&data=' + encodeURIComponent(JSON.stringify(exp));
+      const res = await fetch(url);
+      const result = await res.json();
       console.log('GAS result:', result);
     } catch(e) {
       console.error('GAS error:', e);
-      showToast('クラウド保存エラー: ' + e.message, 'error');
     }
   }
 }
